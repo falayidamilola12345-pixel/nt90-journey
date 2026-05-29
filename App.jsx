@@ -1065,7 +1065,7 @@ const TEACHINGS = [
     sections: [
       { heading: "The Need for Salvation", body: "Romans 3:23 establishes the diagnosis: 'all have sinned and fall short of the glory of God.' Romans 6:23 states the prognosis without intervention: 'the wages of sin is death.' Humans are not basically good people who need a little help — we are spiritually dead, under the wrath of God, separated from the source of life. The Gospel is not self-improvement advice; it is rescue news for the perishing." },
       { heading: "What Salvation Is", body: "Salvation in the NT (Greek: 'soteria') means rescue, deliverance, and wholeness. It encompasses: (1) Justification — being declared righteous before God (past — Romans 5:1); (2) Sanctification — being made holy in our daily lives (present — 1 Corinthians 1:18); (3) Glorification — being made fully like Christ at His return (future — Romans 8:30). You have been saved, are being saved, and will be saved — all by God's grace." },
-      { heading: "How Salvation Comes", body: "Ephesians 2:8-9 is definitive: 'By grace you have been saved, through faith — not from yourselves...not by works.' Romans 10:9-10 gives the practical path: 'If you declare with your mouth "Jesus is Lord," and believe in your heart that God raised him from the dead, you will be saved.' Salvation requires: (1) Repentance — turning from sin; (2) Faith — trusting Christ's finished work; (3) Confession — publicly identifying with Christ." },
+      { heading: "How Salvation Comes", body: "Ephesians 2:8-9 is definitive: 'By grace you have been saved, through faith — not from yourselves...not by works.' Romans 10:9-10 gives the practical path: 'If you declare with your mouth \'Jesus is Lord,\' and believe in your heart that God raised him from the dead, you will be saved.' Salvation requires: (1) Repentance — turning from sin; (2) Faith — trusting Christ's finished work; (3) Confession — publicly identifying with Christ." },
       { heading: "The Security of Salvation", body: "John 10:28-29 records Jesus' words: 'I give them eternal life, and they shall never perish; no one will snatch them out of my hand.' Romans 8:38-39 declares that nothing 'will be able to separate us from the love of God that is in Christ Jesus our Lord.' The security of salvation rests not on your grip on God but on God's grip on you. This does not produce complacency but deep gratitude and confident living." },
       { heading: "Sharing Salvation", body: "Every person who has been saved has been entrusted with the message of salvation for others. 2 Corinthians 5:18-19 says God 'gave us the ministry of reconciliation.' You are an ambassador of the most important news in human history. Your friends, family, and neighbors need what you have. Start by living the life, then speaking the message. The Gospel is not just for church — it is for every relationship you have." }
     ]
@@ -1109,7 +1109,7 @@ const TEACHINGS = [
     bg: "#F2ECF8",
     sections: [
       { heading: "The Holiness of God", body: "Holiness is the defining attribute of God — the one attribute the angels repeat three times: 'Holy, holy, holy is the LORD Almighty' (Isaiah 6:3; Revelation 4:8). The Hebrew 'qodesh' means to be set apart, distinct, other. God is not just morally pure — He is in a category entirely different from all created things. His holiness is the standard, the source, and the goal of all created holiness." },
-      { heading: "Called to Holiness", body: "1 Peter 1:15-16 quotes Leviticus 19:2 and applies it to NT believers: 'But just as he who called you is holy, so be holy in all you do; for it is written: "Be holy, because I am holy."' Holiness is not optional for the Christian — it is the calling. You are holy positionally (set apart in Christ) and are called to become holy practically (in how you live). The two dimensions of holiness: status (who you are) and character (how you live)." },
+      { heading: "Called to Holiness", body: "1 Peter 1:15-16 quotes Leviticus 19:2 and applies it to NT believers: 'But just as he who called you is holy, so be holy in all you do; for it is written: \'Be holy, because I am holy.\'' Holiness is not optional for the Christian — it is the calling. You are holy positionally (set apart in Christ) and are called to become holy practically (in how you live). The two dimensions of holiness: status (who you are) and character (how you live)." },
       { heading: "Holiness and Separation", body: "Romans 12:2 commands 'Do not conform to the pattern of this world, but be transformed by the renewing of your mind.' Holiness always involves separation — from sin, from the world's values, from what dishonors God. But biblical holiness is not monasticism (fleeing the world) — it is incarnational (being in the world while not being of it). Jesus was holy and yet ate with sinners. The standard is not physical separation but spiritual distinction." },
       { heading: "Holiness as a Pursuit", body: "Hebrews 12:14 says 'Make every effort...to be holy.' This is active, disciplined pursuit — not passive waiting. Sanctification requires: (1) Regular exposure to God's Word; (2) Consistent prayer and communion with God; (3) The accountability of Christian community; (4) Active resistance of temptation; (5) The 'putting off and putting on' of Colossians 3. Holiness is not accidental — it is cultivated." },
       { heading: "The Joy of Holiness", body: "The world pictures holiness as joyless, restrictive, and grim. But Psalm 16:11 says 'in your presence there is fullness of joy; at your right hand are pleasures forevermore.' The closer you draw to God in holiness, the deeper your joy, peace, and freedom. Sin promises pleasure but delivers bondage. Holiness promises restriction but delivers freedom — freedom from the tyranny of sinful appetites. The holy life is the truly happy life." }
@@ -1346,6 +1346,23 @@ function DiscipleApp({ user, onLogout }) {
   const [notes, setNotes] = useState({});
   const [activeDay, setActiveDay] = useState(null);
   const [loaded, setLoaded] = useState(false);
+  const [offline, setOffline] = useState(!navigator.onLine);
+
+  // Online/offline banner
+  useEffect(() => {
+    const goOff = () => setOffline(true);
+    const goOn  = () => setOffline(false);
+    window.addEventListener("offline", goOff);
+    window.addEventListener("online",  goOn);
+    return () => { window.removeEventListener("offline", goOff); window.removeEventListener("online", goOn); };
+  }, []);
+
+  // Register service worker
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const saved = lsGet(storageKey);
@@ -1381,6 +1398,12 @@ function DiscipleApp({ user, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Palatino Linotype', Palatino, serif", maxWidth: 780, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8" }}>
+      {/* Offline banner */}
+      {offline && (
+        <div style={{ background: "#4A3000", color: "#FFD580", fontSize: 12, padding: "8px 16px", textAlign: "center", letterSpacing: 0.3 }}>
+          📵 You're offline — commentaries, quizzes, and progress are all available from local cache
+        </div>
+      )}
       {/* Hero */}
       <div style={{ background: "linear-gradient(160deg, #1C0A00 0%, #2D1A0A 60%, #1A2D0A 100%)", padding: "2rem 1.5rem 1.5rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
@@ -1585,6 +1608,53 @@ function TeachingsView() {
 }
 
 // ════════════════════════════════════════════════════════════════════
+// AI COMMENTARY — fetches once, caches forever in localStorage
+// ════════════════════════════════════════════════════════════════════
+const AI_CACHE_PREFIX = "nt90_ai_";
+
+async function fetchAICommentary(label, staticCommentary) {
+  const cacheKey = AI_CACHE_PREFIX + label.replace(/\s+/g, "_");
+  const cached = lsGet(cacheKey);
+  if (cached) return cached;
+
+  const systemPrompt = `You are a scholarly yet pastoral Christian commentator for a 90-day Old Testament discipleship program. Tone: warm, historically grounded, Christ-centred. Return ONLY a valid JSON object with these exact keys: devotional (2-3 paragraphs of rich devotional insight), crossReference (array of {verse, insight} objects — 2-3 NT passages that illuminate this text), prayerPoint (2-3 sentence prayer based on the passage), challenge (one concrete life-application challenge for the next 24 hours). No markdown fences. Valid JSON only.`;
+
+  const userPrompt = `Today\'s reading: ${label}
+
+Static commentary context (expand and enrich — do not repeat verbatim):
+Context: ${staticCommentary.context}
+Themes: ${staticCommentary.themes}
+Memory verse: ${staticCommentary.memoryVerse}
+
+Produce the JSON commentary object now.`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": (typeof import.meta !== "undefined" && import.meta.env?.VITE_ANTHROPIC_KEY) || "",
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = (data.content || []).map(b => b.text || "").join("").replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(raw);
+    lsSet(cacheKey, parsed);
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
 // DAY VIEW
 // ════════════════════════════════════════════════════════════════════
 function DayView({ day, completed, notes, quizScores, onToggleDone, onSaveNote, onSaveQuizScore, onBack, user, onLogout }) {
@@ -1597,15 +1667,34 @@ function DayView({ day, completed, notes, quizScores, onToggleDone, onSaveNote, 
   const [quizData] = useState(() => getQuiz(chs));
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [aiCommentary, setAiCommentary] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(false);
   const label = formatReading(chs);
   const commentary = getCommentary(chs);
+
+  // Load AI commentary when tab opens; serve from cache instantly if available
+  useEffect(() => {
+    const cacheKey = AI_CACHE_PREFIX + label.replace(/\s+/g, "_");
+    const cached = lsGet(cacheKey);
+    if (cached) { setAiCommentary(cached); return; }
+    if (tab === "commentary") {
+      setAiLoading(true);
+      setAiError(false);
+      fetchAICommentary(label, commentary).then(result => {
+        setAiLoading(false);
+        if (result) setAiCommentary(result);
+        else setAiError(true);
+      });
+    }
+  }, [tab, label]);
 
   const score = submitted ? Object.entries(answers).filter(([i, a]) => quizData[+i]?.answer === a).length : 0;
   const alreadyScored = quizScores[day] !== undefined;
 
-  const handleSubmitQuiz = async () => {
+  const handleSubmitQuiz = () => {
     setSubmitted(true);
-    await onSaveQuizScore(day, score, quizData.length);
+    onSaveQuizScore(day, score, quizData.length);
   };
 
   return (
@@ -1670,21 +1759,86 @@ function DayView({ day, completed, notes, quizScores, onToggleDone, onSaveNote, 
         {/* COMMENTARY */}
         {tab === "commentary" && commentary && (
           <div>
+            {/* Memory Verse — always visible, offline-safe */}
             <div style={{ background: sec.bg, borderLeft: `4px solid ${sec.color}`, borderRadius: "0 10px 10px 0", padding: "1rem 1.25rem", marginBottom: "1.25rem" }}>
               <p style={{ fontSize: 11, fontWeight: 600, color: sec.text, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: 1 }}>Memory Verse</p>
               <p style={{ fontSize: 14, color: "#1C0A00", margin: 0, fontStyle: "italic", lineHeight: 1.7 }}>{commentary.memoryVerse}</p>
             </div>
 
-            {[["Historical Context", commentary.historicalContext], ["Key Figures", commentary.keyFigures], ["Passage Context", commentary.context], ["Key Themes", commentary.themes], ["Application for Disciples", commentary.application]].map(([heading, body]) => (
+            {/* Static base commentary — always available offline */}
+            {[["Historical Context", commentary.historicalContext], ["Key Figures", commentary.keyFigures], ["Passage Context", commentary.context], ["Key Themes", commentary.themes], ["Application", commentary.application]].map(([heading, body]) => (
               <div key={heading} style={{ background: "#fff", border: "1px solid #E0D0B8", borderRadius: 10, padding: "1.25rem", marginBottom: 10 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 600, color: sec.color, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>{heading}</h3>
+                <h3 style={{ fontSize: 13, fontWeight: 600, color: sec.color, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>{heading}</h3>
                 <p style={{ fontSize: 14, color: "#2A1A0A", lineHeight: 1.85, margin: 0 }}>{body}</p>
               </div>
             ))}
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: "1rem" }}>
-              <a href={`https://www.blueletterbible.org/commentaries/mhc/`} target="_blank" rel="noopener noreferrer"
-                style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #E0D0B8", textDecoration: "none", fontSize: 13, color: sec.text, background: "#fff" }}>Matthew Henry Commentary ↗</a>
+            {/* AI Commentary — fetched once, cached in localStorage */}
+            <div style={{ marginTop: "1.5rem", marginBottom: "0.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: sec.color, textTransform: "uppercase", letterSpacing: 1.5 }}>✦ AI Devotional Commentary</span>
+                {aiCommentary && <span style={{ fontSize: 10, color: "#5C8A2A", background: "#EEF8E6", padding: "2px 7px", borderRadius: 99 }}>Cached ✓</span>}
+              </div>
+
+              {aiLoading && (
+                <div style={{ background: "#fff", border: "1px solid #E0D0B8", borderRadius: 10, padding: "1.5rem", textAlign: "center" }}>
+                  <div style={{ width: 24, height: 24, border: `2px solid ${sec.color}30`, borderTop: `2px solid ${sec.color}`, borderRadius: "50%", margin: "0 auto 0.75rem", animation: "spin 0.8s linear infinite" }} />
+                  <p style={{ fontSize: 13, color: "#8a7a6a", margin: 0 }}>Generating AI devotional commentary…</p>
+                  <p style={{ fontSize: 11, color: "#aaa", margin: "4px 0 0" }}>This only happens once — it will be cached for offline use</p>
+                </div>
+              )}
+
+              {aiError && (
+                <div style={{ background: "#FFF8EE", border: "1px solid #E0C080", borderRadius: 10, padding: "1rem 1.25rem" }}>
+                  <p style={{ fontSize: 13, color: "#8B6020", margin: 0 }}>⚠️ AI commentary unavailable right now (no internet or API error). The static commentary above is complete and fully available offline.</p>
+                </div>
+              )}
+
+              {aiCommentary && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {/* Devotional */}
+                  <div style={{ background: "#fff", border: `1px solid ${sec.color}30`, borderRadius: 10, padding: "1.25rem", borderLeft: `4px solid ${sec.color}` }}>
+                    <h3 style={{ fontSize: 13, fontWeight: 600, color: sec.color, margin: "0 0 10px", textTransform: "uppercase", letterSpacing: 0.5 }}>Devotional Insight</h3>
+                    <p style={{ fontSize: 14, color: "#2A1A0A", lineHeight: 1.9, margin: 0, whiteSpace: "pre-line" }}>{aiCommentary.devotional}</p>
+                  </div>
+
+                  {/* Cross References */}
+                  {Array.isArray(aiCommentary.crossReference) && aiCommentary.crossReference.length > 0 && (
+                    <div style={{ background: "#fff", border: "1px solid #E0D0B8", borderRadius: 10, padding: "1.25rem" }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 600, color: sec.color, margin: "0 0 10px", textTransform: "uppercase", letterSpacing: 0.5 }}>New Testament Cross-References</h3>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {aiCommentary.crossReference.map((cr, i) => (
+                          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: sec.color, minWidth: 90, paddingTop: 2, fontStyle: "italic" }}>{cr.verse}</span>
+                            <span style={{ fontSize: 13, color: "#2A1A0A", lineHeight: 1.7 }}>{cr.insight}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Prayer Point */}
+                  {aiCommentary.prayerPoint && (
+                    <div style={{ background: sec.bg, border: `1px solid ${sec.color}40`, borderRadius: 10, padding: "1.25rem" }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 600, color: sec.color, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>🙏 Prayer</h3>
+                      <p style={{ fontSize: 14, color: "#2A1A0A", lineHeight: 1.85, margin: 0, fontStyle: "italic" }}>{aiCommentary.prayerPoint}</p>
+                    </div>
+                  )}
+
+                  {/* Challenge */}
+                  {aiCommentary.challenge && (
+                    <div style={{ background: "#F0F8E8", border: "1px solid #A0CC70", borderRadius: 10, padding: "1.25rem" }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 600, color: "#3A6A10", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 0.5 }}>⚡ Today's Challenge</h3>
+                      <p style={{ fontSize: 14, color: "#1A3A08", lineHeight: 1.85, margin: 0 }}>{aiCommentary.challenge}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: "1.25rem" }}>
+              <a href="https://www.blueletterbible.org/commentaries/mhc/" target="_blank" rel="noopener noreferrer"
+                style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #E0D0B8", textDecoration: "none", fontSize: 13, color: sec.text, background: "#fff" }}>Matthew Henry ↗</a>
               <a href={`https://enduringword.com/bible-commentary/${chs[0].book.toLowerCase().replace(/ /g, "-").replace(/^(\d)/, "$1-").replace("1-", "1")}/`} target="_blank" rel="noopener noreferrer"
                 style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #E0D0B8", textDecoration: "none", fontSize: 13, color: sec.text, background: "#fff" }}>Enduring Word ↗</a>
             </div>
